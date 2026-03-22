@@ -7,7 +7,7 @@ import {
   addCategory, updateCategory, deleteCategory,
   updateOrderStatus, deleteOrder,
   getAllUsers, setAdminRole, deleteUser as removeUser,
-  isLoggedIn, logout, changePassword, CFG, showToast
+  isLoggedIn, isAdmin, logout, changePassword, CFG, showToast
 } from '../firebase.js';
 import { navigate } from '../router.js';
 import { stockInfo, fmt, esc } from './components.js';
@@ -25,6 +25,21 @@ export async function render(container) {
       </div>
     `;
     window.__goLogin = () => navigate('/login');
+    return;
+  }
+
+  // Check if user is admin
+  const admin = await isAdmin();
+  if (!admin) {
+    container.innerHTML = `
+      <div style="max-width:400px;margin:80px auto;padding:0 24px;text-align:center">
+        <div style="font-size:4rem;margin-bottom:16px">🚫</div>
+        <h2 style="margin-bottom:12px">Acces refuse</h2>
+        <p style="color:var(--text-secondary);margin-bottom:24px">Vous n'avez pas les droits administrateur.</p>
+        <button class="btn-login" onclick="window.__goHome()">Retour a la boutique</button>
+      </div>
+    `;
+    window.__goHome = () => { logout(); navigate('/'); };
     return;
   }
 

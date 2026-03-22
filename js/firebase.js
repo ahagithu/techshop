@@ -54,6 +54,12 @@ const _authListeners = [];
 export function getCurrentUser() { return _currentUser; }
 export function isLoggedIn()    { return !!_currentUser; }
 
+export async function isAdmin() {
+  if (!_currentUser) return false;
+  const snap = await getDoc(doc(db, 'admins', _currentUser.uid));
+  return snap.exists() && snap.data().role === 'admin';
+}
+
 onAuthStateChanged(auth, (user) => {
   _currentUser = user;
   _authListeners.forEach(fn => fn(user));
