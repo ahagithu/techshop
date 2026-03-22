@@ -6,6 +6,7 @@ import {
   addProduct, updateProduct, deleteProduct,
   addCategory, updateCategory, deleteCategory,
   updateOrderStatus, deleteOrder,
+  getAllUsers, setAdminRole, deleteUser as removeUser,
   isLoggedIn, logout, changePassword, CFG, showToast
 } from '../firebase.js';
 import { navigate } from '../router.js';
@@ -56,6 +57,7 @@ export async function render(container) {
         <button class="admin-tab active" id="tab-products"   onclick="window.__switchTab('products')">📦 Produits</button>
         <button class="admin-tab"        id="tab-categories"  onclick="window.__switchTab('categories')">🏷️ Categories</button>
         <button class="admin-tab"        id="tab-orders"     onclick="window.__switchTab('orders')">📋 Commandes <span id="orderBadge" style="background:var(--danger);color:white;padding:1px 6px;border-radius:10px;font-size:.72rem;margin-left:4px;display:none"></span></button>
+        <button class="admin-tab"        id="tab-users"      onclick="window.__switchTab('users')">👥 Utilisateurs <span id="userBadge" style="background:var(--primary);color:white;padding:1px 6px;border-radius:10px;font-size:.72rem;margin-left:4px;display:none"></span></button>
       </div>
 
       <!-- TAB: Products -->
@@ -165,6 +167,14 @@ export async function render(container) {
           <div id="ordersList">${buildSpinner()}</div>
         </div>
       </div>
+
+      <!-- TAB: Users -->
+      <div id="panel-users" style="display:none">
+        <div class="admin-products-list">
+          <h2>👥 Utilisateurs inscrits</h2>
+          <div id="usersList">${buildSpinner()}</div>
+        </div>
+      </div>
     </div>
   `;
 
@@ -176,7 +186,7 @@ export async function render(container) {
   window.__changePass = handleChangePass;
   // __addCat, __editCat, __saveCatEdit, __deleteCat, __cancelCatEdit, __filterOrders, __setOrderStatus, __deleteOrder are already defined as window.__ functions below
 
-  await Promise.all([loadStats(), loadProducts(), loadCategories(), loadOrders()]);
+  await Promise.all([loadStats(), loadProducts(), loadCategories(), loadOrders(), loadUsers()]);
 }
 
 // ── Stats ──────────────────────────────────────────────────────────────
@@ -506,14 +516,82 @@ window.__deleteOrder = async function(id) {
   await Promise.all([loadStats(), loadOrders()]);
 };
 
+// ── Users ────────────────────────────────────────────────────────────────
+async function loadUsers() {
+  try {
+    const users = await getAllUsers();
+    const el = document.getElementById('usersList');
+
+    // Badge
+    if (users.length > 0) {
+      const badge = document.getElementById('userBadge');
+      badge.textContent = users.length;
+      badge.style.display = 'inline';
+    }
+
+    if (!users.length) {
+      el.innerHTML = '<div style="padding:32px;text-align:center;color:var(--text-secondary)">Aucun utilisateur inscrit.</div>';
+      return;
+    }
+
+    el.innerHTML = users.map(u => {
+      const isAdmin = u.role === 'admin';
+      const date = u.createdAt ? new Date(u.createdAt.seconds * 1000).toLocaleDateString('fr-FR') : '—';
+      return `
+        <div style="padding:16px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+          <div style="width:40px;height:40px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">
+            ${isAdmin ? '👑' : '👤'}
+          </div>
+          <div style="flex:1;min-width:180px">
+            <div style="font-weight:600">${esc(u.email||'')}</div>
+            <div style="font-size:.78rem;color:var(--text-secondary)">Inscrit le ${date}</div>
+          </div>
+          <span style="padding:4px 10px;border-radius:20px;font-size:.75rem;font-weight:600;${isAdmin ? 'background:#fff4e0;color:#a05c00' : 'background:#e6f9ef;color:#0a7c3c'}">
+            ${isAdmin ? 'Admin' : 'Utilisateur'}
+          </span>
+          <div style="display:flex;gap:8px;flex-shrink:0">
+            <button onclick="window.__toggleAdmin('${u.id}', ${!isAdmin})" style="padding:6px 12px;border:1.5px solid var(--primary);color:var(--primary);background:transparent;border-radius:var(--radius-sm);font-size:.78rem;font-weight:600;cursor:pointer">
+              ${isAdmin ? 'Retirer admin' : 'Promouvoir admin'}
+            </button>
+            <button onclick="window.__deleteUser('${u.id}')" style="padding:6px 12px;border:1.5px solid var(--danger);color:var(--danger);background:transparent;border-radius:var(--radius-sm);font-size:.78rem;font-weight:600;cursor:pointer">
+              Supprimer
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  } catch {
+    document.getElementById('usersList').innerHTML = '<div style="padding:16px;color:var(--danger)">Erreur chargement utilisateurs.</div>';
+  }
+}
+
+window.__toggleAdmin = async function(uid, makeAdmin) {
+  await setAdminRole(uid, makeAdmin);
+  showToast(makeAdmin ? 'Utilisateur promu admin.' : 'Rôle admin retiré.', 'success');
+  await loadUsers();
+};
+
+window.__deleteUser = async function(uid) {
+  if (!confirm('Supprimer cet utilisateur ?')) return;
+  try {
+    await removeUser(uid);
+    showToast('Utilisateur supprimé.', 'success');
+    await loadUsers();
+  } catch (err) {
+    showToast('Erreur: ' + err.message, 'error');
+  }
+};
+
 // ── Tab Switching ─────────────────────────────────────────────────────
 function switchTab(tab) {
   document.getElementById('tab-products').classList.toggle('active', tab==='products');
   document.getElementById('tab-categories').classList.toggle('active', tab==='categories');
   document.getElementById('tab-orders').classList.toggle('active', tab==='orders');
+  document.getElementById('tab-users').classList.toggle('active', tab==='users');
   document.getElementById('panel-products').style.display   = tab==='products' ? '' : 'none';
   document.getElementById('panel-categories').style.display  = tab==='categories' ? '' : 'none';
   document.getElementById('panel-orders').style.display     = tab==='orders' ? '' : 'none';
+  document.getElementById('panel-users').style.display     = tab==='users' ? '' : 'none';
 }
 
 // ── Auth ─────────────────────────────────────────────────────────────

@@ -70,8 +70,11 @@ export async function login(email, password) {
 export async function register(email, password) {
   const cred = await createUserWithEmailAndPassword(auth, email, password);
   _currentUser = cred.user;
-  await setDoc(doc(db, 'admins', cred.user.uid), {
-    email: cred.user.email, createdAt: serverTimestamp()
+  // Save to users collection
+  await setDoc(doc(db, 'users', cred.user.uid), {
+    email: cred.user.email,
+    role: 'user',
+    createdAt: serverTimestamp()
   });
   return cred.user;
 }
@@ -275,3 +278,30 @@ export function stockInfo(s) {
 }
 
 export { buildSpinner } from './views/components.js';
+
+// ── Users Management ────────────────────────────────────────────────────
+export async function getAllUsers() {
+  const snap = await getDocs(collection(db, 'users'));
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
+export async function setAdminRole(uid, isAdmin) {
+  if (isAdmin) {
+    await setDoc(doc(db, 'admins', uid), {
+      email: (await getDoc(doc(db, 'users', uid))).data()?.email,
+      role: 'admin',
+      createdAt: serverTimestamp()
+    });
+  } else {
+    await deleteDoc(doc(db, 'admins', uid));
+  }
+}
+
+export async function deleteUser(uid) {
+  // Delete from Firestore collections
+  await deleteDoc(doc(db, 'users', uid)).catch(() => {});
+  await deleteDoc(doc(db, 'admins', uid)).catch(() => {});
+  // Note: Deleting from Auth requires Admin SDK on server-side
+  // For now, we just remove from Firestore
+  showToast('Utilisateur supprime (Firestore).', 'success');
+}
