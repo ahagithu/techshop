@@ -196,11 +196,15 @@ function renderGrid(list) {
 
 function bindProductButtons() {
   document.querySelectorAll('[data-product-id]').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       const id  = btn.dataset.productId;
       const p   = _products.find(x => x.id === id);
       if (!p) return;
       if (btn.dataset.action === 'order') quickOrder(p);
+      else if (btn.dataset.action === 'wishlist') {
+        const { addToWishlist } = await import('../firebase.js');
+        await addToWishlist(p);
+      }
       else openProductModal(p);
     });
   });

@@ -197,16 +197,30 @@ export async function getOrders() {
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
+// Get orders for current user
+export async function getMyOrders() {
+  if (!_currentUser) return [];
+  const snap = await getDocs(query(
+    collection(db, 'orders'),
+    where('userId', '==', _currentUser.uid),
+    orderBy('createdAt', 'desc')
+  ));
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
 export async function addOrder(orderData) {
   const ref = await addDoc(collection(db, 'orders'), {
     ...orderData,
+    userId    : _currentUser?.uid || null,
     status    : 'pending',
     createdAt : serverTimestamp(),
   });
   // Decrement stock
-  await updateDoc(doc(db, 'products', orderData.productId), {
-    stock: increment(-orderData.quantity)
-  });
+  if (orderData.productId) {
+    await updateDoc(doc(db, 'products', orderData.productId), {
+      stock: increment(-orderData.quantity)
+    });
+  }
   return ref.id;
 }
 
@@ -224,6 +238,56 @@ export async function deleteOrder(id) {
     });
   }
   await deleteDoc(doc(db, 'orders', id));
+}
+
+// ── Wishlist ─────────────────────────────────────────────────────────
+export async function getWishlist() {
+  if (!_currentUser) return [];
+  const snap = await getDocs(query(
+    collection(db, 'wishlists'),
+    where('userId', '==', _currentUser.uid)
+  ));
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
+export async function addToWishlist(product) {
+  if (!_currentUser) {
+    showToast('Connectez-vous pour ajouter à la wishlist.', 'error');
+    return;
+  }
+  // Check if already in wishlist
+  const existing = await getDocs(query(
+    collection(db, 'wishlists'),
+    where('userId', '==', _currentUser.uid),
+    where('productId', '==', product.id || product.productId)
+  ));
+  if (existing.docs.length > 0) {
+    showToast('Déjà dans la wishlist.', 'warning');
+    return;
+  }
+  await addDoc(collection(db, 'wishlists'), {
+    userId    : _currentUser.uid,
+    productId : product.id,
+    name      : product.name,
+    price     : product.price,
+    image     : product.image,
+    emoji     : product.emoji,
+    stock     : product.stock,
+    createdAt : serverTimestamp(),
+  });
+  showToast('Ajouté à la wishlist !', 'success');
+}
+
+export async function removeFromWishlist(productId) {
+  if (!_currentUser) return;
+  const snap = await getDocs(query(
+    collection(db, 'wishlists'),
+    where('userId', '==', _currentUser.uid),
+    where('productId', '==', productId)
+  ));
+  for (const doc of snap.docs) {
+    await deleteDoc(doc.ref);
+  }
 }
 
 // ── Admin Stats ──────────────────────────────────────────────────────

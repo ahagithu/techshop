@@ -6,12 +6,14 @@ import { render as renderHome }    from './views/home.js';
 import { render as renderAdmin }   from './views/admin.js';
 import { render as renderContact } from './views/contact.js';
 import { render as renderLogin }   from './views/login.js';
+import { render as renderAccount } from './views/account.js';
 
 // Register all routes
 registerRoute('/',          () => renderPage(renderHome));
 registerRoute('/admin',     () => renderPage(renderAdmin));
 registerRoute('/contact',   () => renderPage(renderContact));
 registerRoute('/login',     () => renderPage(renderLogin));
+registerRoute('/account',   () => renderPage(renderAccount));
 
 // 404
 document.addEventListener('DOMContentLoaded', () => {
@@ -101,13 +103,18 @@ function ensureNav() {
 
   // Update nav on auth change
   import('./firebase.js').then(({ onAuthChange }) => {
-    onAuthChange((user) => {
+    onAuthChange(async (user) => {
       const actions = document.getElementById('navActions');
       if (!actions) return;
       if (user) {
+        // Check if user is admin
+        const { isAdmin } = await import('./firebase.js');
+        const admin = await isAdmin();
+        
         actions.innerHTML = `
           <a href="/contact" data-link class="btn-nav ghost">Contact</a>
-          <a href="/admin" data-link class="btn-nav ghost">🛠️ Dashboard</a>
+          <a href="/account" data-link class="btn-nav ghost">👤 Mon Compte</a>
+          ${admin ? '<a href="/admin" data-link class="btn-nav primary">⚙️ Admin</a>' : ''}
           <button class="btn-nav danger" onclick="window.__navLogout()">Deconnexion</button>
         `;
         window.__navLogout = async () => {
