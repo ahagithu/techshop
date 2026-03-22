@@ -1,0 +1,277 @@
+/**
+ * Firebase configuration and initialization
+ * Replace the firebaseConfig values with your own from:
+ * Firebase Console → Project Settings → Your Apps → Web App
+ */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-analytics.js";
+import {
+  getFirestore, collection, doc, getDocs, getDoc, addDoc,
+  updateDoc, deleteDoc, query, where, orderBy,
+  getCountFromServer, increment, serverTimestamp, setDoc, writeBatch
+} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+import {
+  getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+  signOut, onAuthStateChanged, sendPasswordResetEmail, updatePassword,
+  reauthenticateWithCredential, EmailAuthProvider
+} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+import {
+  getStorage, ref as storageRef, uploadBytes, getDownloadURL
+} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-storage.js";
+
+// ── Firebase Config ──────────────────────────────────────────────────
+const firebaseConfig = {
+  apiKey            : "AIzaSyAW_OLln2Q5cRIDYShxO080wqoj2aS6Mjo",
+  authDomain        : "techshop-f4bf7.firebaseapp.com",
+  projectId         : "techshop-f4bf7",
+  storageBucket     : "techshop-f4bf7.firebasestorage.app",
+  messagingSenderId : "314631488053",
+  appId             : "1:314631488053:web:033357a17d01dc2612a77c",
+  measurementId     : "G-PPW8F42L0C"
+};
+
+const app       = initializeApp(firebaseConfig);
+const db        = getFirestore(app);
+const auth      = getAuth(app);
+const storage   = getStorage(app);
+const analytics = getAnalytics(app);
+
+// ── Expose globally for non-module scripts ───────────────────────────
+window.FB = { db, auth, storage, app };
+
+// ── Shop Config ──────────────────────────────────────────────────────
+export const CFG = {
+  whatsappNumber : '0600000000',
+  lowStock       : 5,
+  currency       : 'MAD',
+  shopName       : 'TechShop',
+};
+
+// ── Auth State ───────────────────────────────────────────────────────
+let _currentUser = null;
+const _authListeners = [];
+
+export function getCurrentUser() { return _currentUser; }
+export function isLoggedIn()    { return !!_currentUser; }
+
+onAuthStateChanged(auth, (user) => {
+  _currentUser = user;
+  _authListeners.forEach(fn => fn(user));
+});
+
+export function onAuthChange(fn) { _authListeners.push(fn); }
+
+export async function login(email, password) {
+  const cred = await signInWithEmailAndPassword(auth, email, password);
+  _currentUser = cred.user;
+  return cred.user;
+}
+
+export async function register(email, password) {
+  const cred = await createUserWithEmailAndPassword(auth, email, password);
+  _currentUser = cred.user;
+  await setDoc(doc(db, 'admins', cred.user.uid), {
+    email: cred.user.email, createdAt: serverTimestamp()
+  });
+  return cred.user;
+}
+
+export async function logout() {
+  await signOut(auth);
+  _currentUser = null;
+}
+
+export async function resetPassword(email) {
+  await sendPasswordResetEmail(auth, email);
+}
+
+export async function changePassword(currentPassword, newPassword) {
+  const cred = EmailAuthProvider.credential(_currentUser.email, currentPassword);
+  await reauthenticateWithCredential(_currentUser, cred);
+  await updatePassword(_currentUser, newPassword);
+}
+
+// ── Products ─────────────────────────────────────────────────────────
+export async function getProducts({ category, search, sort } = {}) {
+  let q = collection(db, 'products');
+  const constraints = [];
+  if (category && category !== 'Tous') constraints.push(where('category', '==', category));
+  if (constraints.length) q = query(q, ...constraints);
+
+  const snap = await getDocs(q);
+  let list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+  if (search) {
+    const s = search.toLowerCase();
+    list = list.filter(p =>
+      p.name.toLowerCase().includes(s) ||
+      (p.description || '').toLowerCase().includes(s) ||
+      (p.category  || '').toLowerCase().includes(s)
+    );
+  }
+
+  if (sort === 'price-asc')  list.sort((a,b) => a.price - b.price);
+  if (sort === 'price-desc') list.sort((a,b) => b.price - a.price);
+  if (sort === 'name-asc')   list.sort((a,b) => a.name.localeCompare(b.name));
+  if (sort === 'stock-desc') list.sort((a,b) => b.stock - a.stock);
+
+  return list;
+}
+
+export async function getProduct(id) {
+  const snap = await getDoc(doc(db, 'products', id));
+  return snap.exists() ? { id: snap.id, ...snap.data() } : null;
+}
+
+export async function getAllProducts() {
+  const snap = await getDocs(query(collection(db, 'products'), orderBy('name')));
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
+export async function addProduct(data) {
+  const ref = await addDoc(collection(db, 'products'), {
+    ...data, createdAt: serverTimestamp(), updatedAt: serverTimestamp()
+  });
+  await updateCategoryCounts();
+  return ref.id;
+}
+
+export async function updateProduct(id, data) {
+  await updateDoc(doc(db, 'products', id), { ...data, updatedAt: serverTimestamp() });
+  await updateCategoryCounts();
+}
+
+export async function deleteProduct(id) {
+  await deleteDoc(doc(db, 'products', id));
+  await updateCategoryCounts();
+}
+
+// ── Categories ───────────────────────────────────────────────────────
+export async function getCategories() {
+  const snap = await getDocs(query(collection(db, 'categories'), orderBy('name')));
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
+export async function addCategory(name, emoji) {
+  const ref = await addDoc(collection(db, 'categories'), { name, emoji, count: 0 });
+  return ref.id;
+}
+
+export async function updateCategory(id, name, emoji) {
+  await updateDoc(doc(db, 'categories', id), { name, emoji });
+}
+
+export async function deleteCategory(id) {
+  await deleteDoc(doc(db, 'categories', id));
+}
+
+export async function updateCategoryCounts() {
+  try {
+    const snap = await getDocs(collection(db, 'products'));
+    const counts = {};
+    snap.docs.forEach(d => {
+      const cat = d.data().category;
+      if (cat) counts[cat] = (counts[cat]||0) + 1;
+    });
+    const batch = writeBatch(db);
+    const catsSnap = await getDocs(collection(db, 'categories'));
+    catsSnap.docs.forEach(c => {
+      batch.update(c.ref, { count: counts[c.data().name]||0 });
+    });
+    await batch.commit();
+  } catch (e) { console.warn('Count update error:', e); }
+}
+
+// ── Orders ──────────────────────────────────────────────────────────
+export async function getOrders() {
+  const snap = await getDocs(query(collection(db, 'orders'), orderBy('createdAt', 'desc')));
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
+export async function addOrder(orderData) {
+  const ref = await addDoc(collection(db, 'orders'), {
+    ...orderData,
+    status    : 'pending',
+    createdAt : serverTimestamp(),
+  });
+  // Decrement stock
+  await updateDoc(doc(db, 'products', orderData.productId), {
+    stock: increment(-orderData.quantity)
+  });
+  return ref.id;
+}
+
+export async function updateOrderStatus(id, status) {
+  await updateDoc(doc(db, 'orders', id), { status, updatedAt: serverTimestamp() });
+}
+
+export async function deleteOrder(id) {
+  // Restore stock before deleting
+  const snap = await getDoc(doc(db, 'orders', id));
+  if (snap.exists()) {
+    const order = snap.data();
+    await updateDoc(doc(db, 'products', order.productId), {
+      stock: increment(order.quantity)
+    });
+  }
+  await deleteDoc(doc(db, 'orders', id));
+}
+
+// ── Admin Stats ──────────────────────────────────────────────────────
+export async function getAdminStats() {
+  const [total, inStock, outSnap, ordersSnap] = await Promise.all([
+    getCountFromServer(collection(db, 'products')),
+    getCountFromServer(query(collection(db, 'products'), where('stock', '>', 0))),
+    getCountFromServer(query(collection(db, 'products'), where('stock', '==', 0))),
+    getCountFromServer(collection(db, 'orders')),
+  ]);
+
+  const ordersDocs = await getDocs(collection(db, 'orders'));
+  const revenue = ordersDocs.docs.reduce((s, d) => s + (d.data().total||0), 0);
+
+  return {
+    total     : total.data().count,
+    inStock   : inStock.data().count,
+    outStock  : outSnap.data().count,
+    orderCount: ordersSnap.data().count,
+    revenue,
+  };
+}
+
+// ── Image Upload ──────────────────────────────────────────────────────
+export async function uploadProductImage(file) {
+  if (!file) return null;
+  const filename = `products/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+  const ref = storageRef(storage, filename);
+  await uploadBytes(ref, file);
+  return await getDownloadURL(ref);
+}
+
+// ── Toast (available everywhere — accesses #toastContainer) ──────────
+export function showToast(msg, type='default') {
+  const c = document.getElementById('toastContainer');
+  if (!c) return;
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 4000);
+}
+
+// ── Utility formatters ─────────────────────────────────────────────────
+export function fmt(v) {
+  if (v == null) return '';
+  return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 0 }).format(v) + ' ' + CFG.currency;
+}
+
+export function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+export function stockInfo(s) {
+  if (s === 0)           return { cls: 'out-stock', label: 'Rupture de stock' };
+  if (s <= CFG.lowStock) return { cls: 'low-stock', label: `⚠️ Plus que ${s}` };
+  return                         { cls: 'in-stock',  label: `✓ En stock (${s})` };
+}
+
+export { buildSpinner } from './views/components.js';
