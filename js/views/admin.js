@@ -5,8 +5,8 @@ import {
   getAdminStats, getAllProducts, getCategories, getOrders,
   addProduct, updateProduct, deleteProduct,
   addCategory, updateCategory, deleteCategory,
-  updateOrderStatus, deleteOrder, uploadProductImage,
-  isLoggedIn, logout, changePassword, CFG
+  updateOrderStatus, deleteOrder,
+  isLoggedIn, logout, changePassword, CFG, showToast
 } from '../firebase.js';
 import { navigate } from '../router.js';
 import { stockInfo, fmt, esc } from './components.js';
@@ -47,7 +47,7 @@ export async function render(container) {
       <!-- Firebase Status -->
       <div class="fb-status ok" style="margin-bottom:20px">
         <div class="fb-status-dot"></div>
-        🔥 Firebase Connecte — Firestore &amp; Auth + Storage
+        🔥 Firebase Connecte — Firestore &amp; Auth
       </div>
 
       <div class="admin-stats" id="adminStats">${buildSpinner()}</div>
@@ -87,18 +87,16 @@ export async function render(container) {
               <div class="form-group"><label>Emoji</label><input type="text" id="p-emoji" placeholder="📱" maxlength="2" /></div>
             </div>
 
-            <!-- Image Upload -->
+            <!-- Image URL -->
             <div class="form-group">
-              <label>Image du produit</label>
-              <div id="imgPreview" style="display:none;margin-bottom:8px;height:120px;border-radius:8px;border:1.5px solid var(--border);overflow:hidden;background:var(--surface2)">
+              <label>URL de l'image</label>
+              <input type="url" id="p-img-url" placeholder="https://raw.githubusercontent.com/ahagithu/techshop/main/images/produit.jpg" oninput="window.__previewImg()" />
+              <div id="imgPreview" style="display:none;margin-top:8px;height:120px;border-radius:8px;border:1.5px solid var(--border);overflow:hidden;background:var(--surface2)">
                 <img id="imgPreviewSrc" style="width:100%;height:100%;object-fit:contain;padding:8px" />
               </div>
-              <input type="file" id="p-img-file" accept="image/*" style="font-size:.85rem" />
-              <div style="margin-top:6px;display:flex;gap:8px;align-items:center">
-                <input type="url" id="p-img-url" placeholder="Ou collez une URL image…" style="flex:1" />
-                <button class="btn-cancel-form" style="padding:8px 12px;font-size:.82rem" onclick="window.__uploadImg()">☁️ Upload</button>
-              </div>
-              <div id="imgUploadStatus" style="font-size:.78rem;margin-top:4px;color:var(--text-secondary)"></div>
+              <p style="font-size:.75rem;color:var(--text-secondary);margin-top:6px">
+                💡 Uploadez vos images sur GitHub → <code>images/</code> puis collez l'URL ici.
+              </p>
             </div>
 
             <div class="form-group">
@@ -278,6 +276,7 @@ window.__editProduct = async function(id) {
   document.getElementById('p-badge').value = p.badge || '';
 
   if (p.image) {
+    document.getElementById('p-img-url').value = p.image || '';
     document.getElementById('imgPreview').style.display = 'block';
     document.getElementById('imgPreviewSrc').src = p.image;
   }
@@ -304,16 +303,7 @@ async function saveProduct() {
     showToast('Remplissez les champs obligatoires.', 'error'); return;
   }
 
-  const imgFile = document.getElementById('p-img-file').files[0];
-  const imgUrl  = document.getElementById('p-img-url').value.trim();
-  let image = imgUrl;
-
-  if (imgFile) {
-    document.getElementById('imgUploadStatus').textContent = '☁️ Upload en cours…';
-    try { image = await uploadProductImage(imgFile); }
-    catch(e) { showToast('Upload image echoue.', 'error'); image = ''; }
-    document.getElementById('imgUploadStatus').textContent = image ? '✅ Image uploadée.' : '';
-  }
+  const image = document.getElementById('p-img-url').value.trim();
 
   const body = {
     name, category,
@@ -350,29 +340,27 @@ function resetProductForm() {
   ['p-name','p-desc','p-price','p-old-price','p-stock','p-emoji','p-img-url'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('p-cat').value = '';
   document.getElementById('p-badge').value = '';
-  document.getElementById('p-img-file').value = '';
   document.getElementById('imgPreview').style.display = 'none';
   document.getElementById('prodFormTitle').textContent = '➕ Ajouter un produit';
   document.getElementById('prodCancelBtn').style.display = 'none';
-  document.getElementById('imgUploadStatus').textContent = '';
 }
 
-async function uploadImg() {
-  const file = document.getElementById('p-img-file').files[0];
-  if (!file) { showToast('Selectionnez d\'abord une image.', 'warning'); return; }
-  const statusEl = document.getElementById('imgUploadStatus');
-  statusEl.textContent = '☁️ Upload…';
-  try {
-    const url = await uploadProductImage(file);
-    document.getElementById('p-img-url').value = url;
-    document.getElementById('imgPreview').style.display = 'block';
-    document.getElementById('imgPreviewSrc').src = url;
-    statusEl.textContent = '✅ Upload reussi !';
-  } catch (e) {
-    statusEl.textContent = '❌ Echec upload.';
-    showToast('Echec upload image.', 'error');
+// Live image preview when URL is pasted
+window.__previewImg = function() {
+  const url = document.getElementById('p-img-url').value.trim();
+  const preview = document.getElementById('imgPreview');
+  const previewSrc = document.getElementById('imgPreviewSrc');
+  if (url) {
+    previewSrc.src = url;
+    preview.style.display = 'block';
+    previewSrc.onerror = () => {
+      preview.style.display = 'none';
+      showToast('Image introuvable. Verifiez l\'URL.', 'error');
+    };
+  } else {
+    preview.style.display = 'none';
   }
-}
+};
 
 // ── Categories ───────────────────────────────────────────────────────
 function populateCatSelect(selected = '') {
