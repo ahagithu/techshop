@@ -1,9 +1,8 @@
 /**
  * Login page view
  */
-import { login, register, resetPassword } from '../firebase.js';
+import { login, register, resetPassword, showToast } from '../firebase.js';
 import { navigate } from '../router.js';
-import { showToast } from './components.js';
 
 let _tab = 'login';
 
