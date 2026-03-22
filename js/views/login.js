@@ -59,8 +59,11 @@ export function render(container) {
 
 function switchTab(tab) {
   _tab = tab;
-  document.getElementById('tab-login').classList.toggle('active', tab==='login');
-  document.getElementById('tab-register').classList.toggle('active', tab==='register');
+  // Update tab styling
+  const tabs = document.querySelectorAll('.login-tab');
+  tabs.forEach(t => {
+    t.classList.toggle('active', t.textContent.trim() === (tab === 'login' ? 'Connexion' : 'Creer un compte'));
+  });
   document.getElementById('confirmGroup').style.display = tab==='register' ? '' : 'none';
   document.getElementById('resetPanel').style.display = 'none';
   document.getElementById('loginError').style.display = 'none';
