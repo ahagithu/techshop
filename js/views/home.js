@@ -335,18 +335,6 @@ function stockInfo(s) {
   return { cls:'in-stock', label:`✓ En stock (${s})` };
 }
 
-function fmt(v) {
-  if (v == null) return '';
-  return new Intl.NumberFormat('fr-FR',{minimumFractionDigits:0}).format(v) + ' ' + CFG.currency;
-}
-
 function esc(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-function showToast(msg, type='default') {
-  const c = document.getElementById('toastContainer');
-  const t = document.createElement('div');
-  t.className = `toast ${type}`; t.textContent = msg;
-  c.appendChild(t); setTimeout(() => t.remove(), 4000);
 }
