@@ -21,13 +21,13 @@ import {
 
 // ── Firebase Config ──────────────────────────────────────────────────
 const firebaseConfig = {
-  apiKey            : "AIzaSyAW_OLln2Q5cRIDYShxO080wqoj2aS6Mjo",
-  authDomain        : "techshop-f4bf7.firebaseapp.com",
-  projectId         : "techshop-f4bf7",
-  storageBucket     : "techshop-f4bf7.firebasestorage.app",
-  messagingSenderId : "314631488053",
-  appId             : "1:314631488053:web:033357a17d01dc2612a77c",
-  measurementId     : "G-PPW8F42L0C"
+  apiKey            : "AIzaSyDD6vW_sCIYQPLkdau77tWNULWsq1WiT2U",
+  authDomain        : "boutique-electronique.firebaseapp.com",
+  projectId         : "boutique-electronique",
+  storageBucket     : "boutique-electronique.firebasestorage.app",
+  messagingSenderId : "691090681174",
+  appId             : "1:691090681174:web:a1624e37bae8af93297af7",
+  measurementId     : "G-6GFV5VNVYS"
 };
 
 const app       = initializeApp(firebaseConfig);
