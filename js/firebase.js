@@ -41,7 +41,10 @@ window.FB = { db, auth, storage, app };
 
 // ── Shop Config ──────────────────────────────────────────────────────
 export const CFG = {
-  whatsappNumber : '+2279303158',
+  whatsappNumbers : [
+    { name: 'Adamou', num: '22789631595' },
+    { name: 'Volts Niger', num: '22793033158' }
+  ],
   lowStock       : 5,
   currency       : 'FCFA',
   shopName       : 'VoltsNiger',

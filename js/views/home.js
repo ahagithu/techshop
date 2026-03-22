@@ -78,6 +78,14 @@ export function render(container) {
             <textarea id="orderAddress" placeholder="Ville, quartier, rue..." rows="2"></textarea>
           </div>
 
+          <div class="form-group">
+            <label>Envoyer via WhatsApp</label>
+            <select id="orderWhatsApp" style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:.9rem;background:var(--surface);color:var(--text);outline:none;cursor:pointer">
+              <option value="22789631595">📱 +227 89 63 15 95 (Adamou)</option>
+              <option value="22793033158">📱 +227 93 03 31 58 (Volts Niger)</option>
+            </select>
+          </div>
+
           <div class="form-row">
             <div class="form-group">
               <label>Quantite</label>
@@ -273,6 +281,7 @@ async function submitOrder() {
   const phone   = document.getElementById('orderPhone').value.trim();
   const address = document.getElementById('orderAddress').value.trim();
   const qty     = parseInt(document.getElementById('orderQty').value) || 1;
+  const waNum   = document.getElementById('orderWhatsApp').value;
   const errEl   = document.getElementById('orderError');
 
   if (!name)    { errEl.textContent = 'Veuillez entrer votre nom.'; errEl.style.display='block'; return; }
@@ -295,10 +304,11 @@ async function submitOrder() {
       customerName : name,
       customerPhone: phone,
       customerAddress: address,
+      whatsappNumber: waNum,
     });
 
     const msg = buildWAMsg(_orderProduct, qty, name, phone, address);
-    window.open(`https://wa.me/${CFG.whatsappNumber}?text=${msg}`, '_blank');
+    window.open(`https://wa.me/${waNum}?text=${msg}`, '_blank');
 
     showToast('Commande enregistree ! Redirection WhatsApp…', 'success');
     closeOrderModal();
