@@ -44,7 +44,7 @@ export const CFG = {
   whatsappNumber : '0600000000',
   lowStock       : 5,
   currency       : 'FCFA',
-  shopName       : 'TechShop',
+  shopName       : 'VoltsNiger',
 };
 
 // ── Auth State ───────────────────────────────────────────────────────

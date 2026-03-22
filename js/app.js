@@ -42,7 +42,7 @@ async function renderPage(viewFn) {
           </p>
         </div>
       `;
-      console.error('[TechShop]', err);
+      console.error('[VoltsNiger]', err);
     }
   }
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -57,7 +57,7 @@ function ensureNav() {
   const nav = document.createElement('nav');
   nav.id = 'mainNav';
   nav.innerHTML = `
-    <div class="nav-logo" onclick="window.__navLogo()">Tech<span>Shop</span></div>
+    <div class="nav-logo" onclick="window.__navLogo()">Volts<span>Niger</span></div>
     <div class="nav-actions" id="navActions" style="margin-left:auto;display:flex;align-items:center;gap:8px">
       <a href="/contact" data-link class="btn-nav ghost">Contact</a>
       <a href="/login" data-link class="btn-nav primary">Connexion</a>

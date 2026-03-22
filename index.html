@@ -38,8 +38,8 @@
       --transition     : .2s cubic-bezier(.4,0,.2,1);
     }
 
-    html { scroll-behavior: smooth; }
-    body { font-family: var(--font); background: var(--bg); color: var(--text); line-height: 1.6; }
+    html { scroll-behavior: smooth; overflow-x: hidden; }
+    body { font-family: var(--font); background: var(--bg); color: var(--text); line-height: 1.6; overflow-x: hidden; }
 
     /* ════════════════════════════════════════════════
        NAVIGATION
@@ -414,12 +414,37 @@
        RESPONSIVE
     ════════════════════════════════════════════════ */
     @media (max-width: 768px) {
-      nav { height:56px; padding:0 16px; }
+      nav { height:56px; padding:0 12px; }
+      .nav-logo { font-size:1.1rem; }
+      .nav-actions { gap:4px; }
+      .btn-nav { padding:6px 10px; font-size:.8rem; }
       .admin-panel, .categories-panel { grid-template-columns:1fr; }
       .admin-form-card { position:static; }
       .form-row { grid-template-columns:1fr; }
-      .products-grid { grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:16px; }
-      .product-image-wrap { height:160px; }
+      .products-grid { grid-template-columns:repeat(2,1fr); gap:12px; }
+      .product-image-wrap { height:140px; }
+      .product-info { padding:12px 14px 16px; }
+      .product-name { font-size:.9rem; }
+      .product-price { font-size:1.1rem; }
+      .product-actions { flex-direction:column; }
+      .btn-whatsapp { width:100%; padding:10px; font-size:.85rem; }
+      .btn-detail { width:100%; padding:10px; }
+      .hero { padding:48px 16px; }
+      .hero h1 { font-size:1.8rem; }
+      .hero p { font-size:1rem; }
+      .hero-stats { gap:24px; }
+      .hero-stat .value { font-size:1.5rem; }
+      .main-wrapper { padding:24px 16px; }
+      .section-title { font-size:1.3rem; }
+      .contact-section { padding:32px 16px; }
+      .contact-card { padding:24px 16px; }
+      .filters-bar { gap:8px; }
+      .filter-btn { padding:6px 14px; font-size:.8rem; }
+    }
+
+    @media (max-width: 400px) {
+      .products-grid { grid-template-columns:1fr; }
+      .product-image-wrap { height:180px; }
     }
 
     @keyframes fadeInUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
