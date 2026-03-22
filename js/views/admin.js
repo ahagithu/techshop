@@ -13,7 +13,6 @@ import { stockInfo, fmt, esc } from './components.js';
 
 let _categories   = [];
 let _editingProdId = null;
-let _uploadingImg  = false;
 
 export async function render(container) {
   if (!isLoggedIn()) {
@@ -174,7 +173,6 @@ export async function render(container) {
   window.__switchTab = switchTab;
   window.__saveProduct = saveProduct;
   window.__resetProductForm = resetProductForm;
-  window.__uploadImg = uploadImg;
   window.__changePass = handleChangePass;
   window.__addCat = handleAddCat;
   window.__filterOrders = filterOrders;
@@ -184,15 +182,6 @@ export async function render(container) {
   window.__saveCatEdit = saveCatEdit;
   window.__deleteCat = handleDeleteCat;
   window.__cancelCatEdit = cancelCatEdit;
-
-  // Image preview
-  document.getElementById('p-img-file')?.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    document.getElementById('imgPreview').style.display = 'block';
-    document.getElementById('imgPreviewSrc').src = URL.createObjectURL(file);
-    document.getElementById('p-img-url').value = '';
-  });
 
   await Promise.all([loadStats(), loadProducts(), loadCategories(), loadOrders()]);
 }
@@ -276,7 +265,6 @@ window.__editProduct = async function(id) {
   document.getElementById('p-badge').value = p.badge || '';
 
   if (p.image) {
-    document.getElementById('p-img-url').value = p.image || '';
     document.getElementById('imgPreview').style.display = 'block';
     document.getElementById('imgPreviewSrc').src = p.image;
   }
@@ -561,12 +549,4 @@ async function handleChangePass() {
 // ── Misc ─────────────────────────────────────────────────────────────
 function buildSpinner() {
   return '<div class="spinner-wrap"><div class="spinner"></div></div>';
-}
-
-function showToast(msg, type='default') {
-  const c = document.getElementById('toastContainer');
-  if (!c) return;
-  const t = document.createElement('div');
-  t.className = `toast ${type}`; t.textContent = msg;
-  c.appendChild(t); setTimeout(() => t.remove(), 4000);
 }
