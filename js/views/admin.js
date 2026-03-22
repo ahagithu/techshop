@@ -168,20 +168,13 @@ export async function render(container) {
     </div>
   `;
 
-  // Bind globals
+  // Bind named functions
   window.__adminLogout = handleLogout;
   window.__switchTab = switchTab;
   window.__saveProduct = saveProduct;
   window.__resetProductForm = resetProductForm;
   window.__changePass = handleChangePass;
-  window.__addCat = handleAddCat;
-  window.__filterOrders = filterOrders;
-  window.__setOrderStatus = setOrderStatus;
-  window.__deleteOrder = handleDeleteOrder;
-  window.__editCat = editCat;
-  window.__saveCatEdit = saveCatEdit;
-  window.__deleteCat = handleDeleteCat;
-  window.__cancelCatEdit = cancelCatEdit;
+  // __addCat, __editCat, __saveCatEdit, __deleteCat, __cancelCatEdit, __filterOrders, __setOrderStatus, __deleteOrder are already defined as window.__ functions below
 
   await Promise.all([loadStats(), loadProducts(), loadCategories(), loadOrders()]);
 }
