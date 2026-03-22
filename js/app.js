@@ -68,13 +68,16 @@ function ensureNav() {
   // Footer
   const footer = document.createElement('footer');
   footer.innerHTML = `
-    <p><strong>TechShop</strong> — Votre boutique electronique de confiance</p>
-    <p style="margin-top:8px">
-      <a href="https://wa.me/0600000000">WhatsApp</a> &nbsp;·&nbsp;
-      <a href="mailto:contact@techshop.com">Email</a> &nbsp;·&nbsp;
+    <div class="footer-brand">Volts Niger Shop</div>
+    <p>Votre boutique electronique de confiance</p>
+    <p class="footer-location">📍 Niamey, Niger</p>
+    <div class="footer-contact">
+      <a href="https://wa.me/22789631595">📱 +227 89 63 15 95</a>
+      <a href="https://wa.me/22793033158">📱 +227 93 03 31 58</a>
+      <a href="mailto:www.adamoualhou25@gmail.com">✉️ Email</a>
       <a href="/contact" data-link>Contact</a>
-    </p>
-    <p style="margin-top:12px;opacity:.5;font-size:.78rem">© 2026 TechShop. Tous droits reserves.</p>
+    </div>
+    <p style="margin-top:16px;opacity:.5;font-size:.78rem">© 2026 Volts Niger Shop. Tous droits reserves.</p>
   `;
   document.body.appendChild(footer);
 
