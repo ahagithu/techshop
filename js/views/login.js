@@ -1,7 +1,7 @@
 /**
  * Login page view
  */
-import { login, register, resetPassword, showToast } from '../firebase.js';
+import { login, register, resetPassword, showToast, isAdmin } from '../firebase.js';
 import { navigate } from '../router.js';
 
 let _tab = 'login';
@@ -107,12 +107,13 @@ async function handleSubmit() {
   try {
     if (_tab === 'login') {
       await login(email, password);
+      const admin = await isAdmin();
       showToast(`Bienvenue !`, 'success');
-      navigate('/admin');
+      navigate(admin ? '/admin' : '/');
     } else {
       await register(email, password);
       showToast('Compte cree ! Bienvenue.', 'success');
-      navigate('/admin');
+      navigate('/');
     }
   } catch (err) {
     const msgs = {
