@@ -89,7 +89,7 @@ export function render(container) {
             </div>
             <div class="form-group">
               <label>Total</label>
-              <div style="padding:10px 14px;background:var(--primary-light);border:1.5px solid var(--border);border-radius:var(--radius-sm);font-weight:700;color:var(--primary);font-size:1.1rem" id="orderTotal">0 MAD</div>
+              <div style="padding:10px 14px;background:var(--primary-light);border:1.5px solid var(--border);border-radius:var(--radius-sm);font-weight:700;color:var(--primary);font-size:1.1rem" id="orderTotal">0 FCFA</div>
             </div>
           </div>
 

@@ -95,7 +95,7 @@ export async function render(container) {
               <textarea id="p-desc" placeholder="Decrivez le produit…" rows="2"></textarea>
             </div>
             <div class="form-row">
-              <div class="form-group"><label>Prix (MAD) *</label><input type="number" id="p-price" placeholder="0" min="0" step="0.01" /></div>
+              <div class="form-group"><label>Prix (FCFA) *</label><input type="number" id="p-price" placeholder="0" min="0" step="0.01" /></div>
               <div class="form-group"><label>Ancien prix</label><input type="number" id="p-old-price" placeholder="0" min="0" step="0.01" /></div>
             </div>
             <div class="form-row">

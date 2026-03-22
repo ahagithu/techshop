@@ -43,7 +43,7 @@ window.FB = { db, auth, storage, app };
 export const CFG = {
   whatsappNumber : '0600000000',
   lowStock       : 5,
-  currency       : 'MAD',
+  currency       : 'FCFA',
   shopName       : 'TechShop',
 };
 
