@@ -2,6 +2,12 @@
   command = ""
   publish = "/"
 
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Headers = "*"
+
 [[redirects]]
   from = "/*"
   to = "/index.html"

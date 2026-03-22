@@ -25,8 +25,23 @@ async function renderPage(viewFn) {
   ensureNav();
   const app = document.getElementById('app');
   if (app) {
-    app.innerHTML = '<div class="spinner-wrap" style="padding:80px"><div class="spinner"></div></div>';
-    await viewFn(app);
+    app.innerHTML = '<div class="spinner-wrap" style="padding:80px"><div class="spinner"></div><p id="fb-status" style="margin-top:16px;color:#888;font-size:.85rem">Connexion Firebase...</p></div>';
+    try {
+      await viewFn(app);
+    } catch (err) {
+      app.innerHTML = `
+        <div style="padding:40px 24px;max-width:600px;margin:0 auto;text-align:center">
+          <h2 style="color:#d32f2f">Erreur de chargement</h2>
+          <pre style="background:#f5f5f5;padding:16px;border-radius:8px;text-align:left;font-size:.8rem;overflow:auto;margin-top:16px">${err.message || err}</pre>
+          <p style="margin-top:16px;color:#666;font-size:.9rem">
+            Verifiez que les services Firebase sont actives dans la
+            <a href="https://console.firebase.google.com/project/techshop-f4bf7/overview" target="_blank">Firebase Console</a>
+            (Firestore, Authentication, Storage).
+          </p>
+        </div>
+      `;
+      console.error('[TechShop]', err);
+    }
   }
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
