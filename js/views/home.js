@@ -13,7 +13,7 @@ export function render(container) {
     <!-- Hero -->
     <section class="hero fade-in">
       <div class="hero-content">
-        <span class="hero-badge">✦ Nouvelle collection 2026</span>
+        <span class="hero-badge">✦ Nouvelle collection </span>
         <h1>L'electronique au meilleur prix</h1>
         <p>Smartphones, laptops, accessoires — tout ce dont vous avez besoin, livre rapidement via WhatsApp.</p>
         <div class="hero-cta">
@@ -23,7 +23,7 @@ export function render(container) {
         <div class="hero-stats">
           <div class="hero-stat"><div class="value" id="statProducts">—</div><div class="label">Produits</div></div>
           <div class="hero-stat"><div class="value">100%</div><div class="label">Satisfait</div></div>
-          <div class="hero-stat"><div class="value">24h</div><div class="label">Livraison</div></div>
+          <div class="hero-stat"><div class="value">Possible</div><div class="label">Livraison</div></div>
         </div>
       </div>
     </section>
@@ -81,8 +81,8 @@ export function render(container) {
           <div class="form-group">
             <label>Envoyer via WhatsApp</label>
             <select id="orderWhatsApp" style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:.9rem;background:var(--surface);color:var(--text);outline:none;cursor:pointer">
-              <option value="22789631595">📱 +227 89 63 15 95 (Adamou)</option>
               <option value="22793033158">📱 +227 93 03 31 58 (Volts Niger)</option>
+              <option value="22789631595">📱 +227 89 63 15 95 (Volts Niger)</option>
             </select>
           </div>
 
