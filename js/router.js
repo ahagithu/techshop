@@ -6,21 +6,53 @@ const _routes = {};
 let _notFoundHandler = null;
 
 // Detect base path for GitHub Pages (repository name in URL)
-function getBasePath() {
+// This is set at runtime based on where the app is hosted
+let _basePath = null;
+
+function detectBasePath() {
+  // Check for a global variable set in index.html
+  if (window.__BASE_PATH__) {
+    return window.__BASE_PATH__;
+  }
+  
+  // Auto-detect from current URL
+  // For GitHub Pages project sites: username.github.io/repo-name/
+  // The key is that index.html is at the root, and we need to figure out
+  // what part of the URL is the "base" vs the "route"
+  
   const path = location.pathname;
-  // If we're on GitHub Pages with a project repo, the path will be /repo-name/
-  // We need to extract the base path (everything before the actual route)
   const segments = path.split('/').filter(Boolean);
   
-  // Check if we're in a GitHub Pages project (not custom domain root)
-  // If the URL has a path segment that matches our repo name, use it as base
-  const repoName = 'boutique-electronique'; // Your repo name
-  const repoIndex = segments.indexOf(repoName);
-  
-  if (repoIndex !== -1) {
-    return '/' + segments.slice(0, repoIndex + 1).join('/') + '/';
+  // If we're at the root (no segments), base is /
+  if (segments.length === 0) {
+    return '/';
   }
+  
+  // Check if first segment looks like a repo name (not a route)
+  const knownRoutes = ['admin', 'contact', 'login', 'account'];
+  const firstSegment = segments[0];
+  
+  // If first segment is a known route, we're at root
+  if (knownRoutes.includes(firstSegment)) {
+    return '/';
+  }
+  
+  // Otherwise, first segment is likely the repo name
+  // But we need to be smarter: check if we're in a sub-path of the repo
+  if (segments.length >= 1) {
+    // Return the first segment as base
+    return '/' + firstSegment + '/';
+  }
+  
   return '/';
+}
+
+function getBasePath() {
+  if (_basePath === null) {
+    _basePath = detectBasePath();
+    console.log('[Router] Detected base path:', _basePath);
+  }
+  return _basePath;
 }
 
 // Get the current route path (without base path)
@@ -28,11 +60,27 @@ function getRoutePath() {
   const basePath = getBasePath();
   const pathname = location.pathname;
   
-  if (pathname.startsWith(basePath) && basePath !== '/') {
-    const route = pathname.slice(basePath.length - 1); // Keep the leading /
+  console.log('[Router Debug] basePath:', basePath, '| pathname:', pathname);
+  
+  if (basePath !== '/' && pathname.startsWith(basePath)) {
+    let route = pathname.slice(basePath.length);
+    // Ensure route starts with /
+    if (!route.startsWith('/')) {
+      route = '/' + route;
+    }
+    // Remove trailing slash for consistency, except for root
+    if (route.length > 1 && route.endsWith('/')) {
+      route = route.slice(0, -1);
+    }
     return route || '/';
   }
-  return pathname;
+  
+  // For root path, just return pathname as-is but normalized
+  let route = pathname;
+  if (route.length > 1 && route.endsWith('/')) {
+    route = route.slice(0, -1);
+  }
+  return route || '/';
 }
 
 export function registerRoute(path, handler) {

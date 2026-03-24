@@ -22,6 +22,28 @@
       }
     }(window.location))
   </script>
+  
+  <!-- Base path configuration for GitHub Pages -->
+  <script>
+    // Set this to your repository name if using GitHub Pages project site
+    // Leave as '/' for custom domain or user/org site
+    // Example: '/boutique-electronique/' or '/my-repo/'
+    window.__BASE_PATH__ = '/';
+    
+    // Auto-detect for GitHub Pages
+    (function() {
+      const path = location.pathname;
+      const segments = path.split('/').filter(Boolean);
+      const knownRoutes = ['admin', 'contact', 'login', 'account'];
+      
+      // If first segment is not a known route, assume it's the repo name
+      if (segments.length > 0 && !knownRoutes.includes(segments[0])) {
+        window.__BASE_PATH__ = '/' + segments[0] + '/';
+      }
+      
+      console.log('[Config] Base path set to:', window.__BASE_PATH__);
+    })();
+  </script>
 
   <style>
     /* ════════════════════════════════════════════════
