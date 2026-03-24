@@ -79,11 +79,11 @@ export function render(container) {
           </div>
 
           <div class="form-group">
-            <label>Envoyer via WhatsApp</label>
-            <select id="orderWhatsApp" style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:.9rem;background:var(--surface);color:var(--text);outline:none;cursor:pointer">
-              <option value="22793033158">📱 +227 93 03 31 58 (Volts Niger)</option>
-              <option value="22789631595">📱 +227 89 63 15 95 (Volts Niger)</option>
-            </select>
+            <label>Notification WhatsApp</label>
+            <div style="padding:10px 14px;background:var(--primary-light);border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:.9rem;color:var(--text-secondary)">
+              📱 La commande sera envoyée aux deux numéros :<br>
+              <strong>+227 93 03 31 58</strong> & <strong>+227 89 63 15 95</strong>
+            </div>
           </div>
 
           <div class="form-row">
@@ -281,7 +281,6 @@ async function submitOrder() {
   const phone   = document.getElementById('orderPhone').value.trim();
   const address = document.getElementById('orderAddress').value.trim();
   const qty     = parseInt(document.getElementById('orderQty').value) || 1;
-  const waNum   = document.getElementById('orderWhatsApp').value;
   const errEl   = document.getElementById('orderError');
 
   if (!name)    { errEl.textContent = 'Veuillez entrer votre nom.'; errEl.style.display='block'; return; }
@@ -291,6 +290,9 @@ async function submitOrder() {
   const btn = document.getElementById('orderSubmitBtn');
   btn.disabled = true; btn.textContent = 'Envoi en cours…';
   errEl.style.display = 'none';
+
+  // Les deux numéros WhatsApp
+  const whatsappNumbers = ['22793033158', '22789631595'];
 
   try {
     const { addOrder } = await import('../firebase.js');
@@ -304,11 +306,17 @@ async function submitOrder() {
       customerName : name,
       customerPhone: phone,
       customerAddress: address,
-      whatsappNumber: waNum,
+      whatsappNumbers: whatsappNumbers,
     });
 
     const msg = buildWAMsg(_orderProduct, qty, name, phone, address);
-    window.open(`https://wa.me/${waNum}?text=${msg}`, '_blank');
+    
+    // Ouvrir les deux conversations WhatsApp
+    whatsappNumbers.forEach((num, index) => {
+      setTimeout(() => {
+        window.open(`https://wa.me/${num}?text=${msg}`, '_blank');
+      }, index * 500); // Délai de 500ms entre chaque ouverture
+    });
 
     showToast('Commande enregistree ! Redirection WhatsApp…', 'success');
     closeOrderModal();
