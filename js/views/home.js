@@ -15,7 +15,7 @@ export function render(container) {
       <div class="hero-content">
         <span class="hero-badge">✦ Nouvelle collection </span>
         <h1>L'electronique au meilleur prix</h1>
-        <p>Smartphones, laptops, accessoires — tout ce dont vous avez besoin, livre rapidement via WhatsApp.</p>
+        <p>Composants electroniques de base, Capteurs Industriels, accessoires, etc... — tout ce dont vous avez besoin, Commander facilement et rapidement via WhatsApp.</p>
         <div class="hero-cta">
           <a href="#catalogue" class="btn-hero-primary" onclick="document.getElementById('catalogue').scrollIntoView({behavior:'smooth'})">Voir le catalogue</a>
           <a href="/contact" data-link class="btn-hero-secondary">Nous contacter</a>
