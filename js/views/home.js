@@ -23,7 +23,7 @@ export function render(container) {
         <div class="hero-stats">
           <div class="hero-stat"><div class="value" id="statProducts">—</div><div class="label">Produits</div></div>
           <div class="hero-stat"><div class="value">100%</div><div class="label">Satisfait</div></div>
-          <div class="hero-stat"><div class="value">Possible</div><div class="label">Livraison</div></div>
+          <div class="hero-stat"><div class="value">Livraison</div><div class="label">Possible mais pas gratuit</div></div>
         </div>
       </div>
     </section>
