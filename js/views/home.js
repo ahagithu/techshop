@@ -119,6 +119,7 @@ export function render(container) {
   window.__orderQty       = orderQty;
   window.__updateOrderTotal = updateOrderTotal;
   window.__submitOrder    = submitOrder;
+  window.__toggleDesc     = toggleDesc;
 
   loadData();
 }
@@ -348,6 +349,22 @@ function buildWAMsg(p, qty, name, phone, address) {
 
 Merci de confirmer la disponibilite et les details de livraison.`;
   return encodeURIComponent(text);
+}
+
+// ── Description toggle ───────────────────────────────────────────────
+function toggleDesc(id, btn) {
+  const el = document.getElementById('desc-' + id);
+  if (!el) return;
+  const expanded = btn.getAttribute('aria-expanded') === 'true';
+  if (expanded) {
+    el.classList.remove('desc-expanded');
+    btn.setAttribute('aria-expanded', 'false');
+    btn.innerHTML = 'Voir plus <span class="desc-toggle-arrow">▾</span>';
+  } else {
+    el.classList.add('desc-expanded');
+    btn.setAttribute('aria-expanded', 'true');
+    btn.innerHTML = 'Voir moins <span class="desc-toggle-arrow" style="transform:rotate(180deg);display:inline-block">▾</span>';
+  }
 }
 
 // ── Utilities ───────────────────────────────────────────────────────

@@ -25,7 +25,11 @@ export function buildProductCard(p, categories) {
       <div class="product-info">
         <div class="product-category">${emoji} ${esc(p.category||'')}</div>
         <div class="product-name">${esc(p.name)}</div>
-        <div class="product-description">${esc(p.description||'')}</div>
+        <div class="product-description" id="desc-${p.id}">${esc(p.description||'')}</div>
+        ${(p.description||'').length > 80 ? `
+        <button class="desc-toggle-btn" onclick="window.__toggleDesc('${p.id}', this)" aria-expanded="false">
+          Voir plus <span class="desc-toggle-arrow">▾</span>
+        </button>` : ''}
         <div class="product-price-row">
           <span class="product-price">${fmt(p.price)}</span>
           ${hasOld ? `<span class="product-price-old">${fmt(p.oldPrice)}</span>` : ''}
